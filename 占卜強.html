@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神聖領域：靈魂聖殿占卜</title>
+    <style>
+        :root {
+            --bg-color: #0d0b18;
+            --gold: #d4af37;
+            --text-color: #e0dbec;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle at 50% 50%, #1a153a 0%, #0d0b18 80%);
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: var(--gold);
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+        p.intro {
+            font-size: 0.95rem;
+            color: #a29bfe;
+            margin-bottom: 30px;
+        }
+        .card-area {
+            height: 260px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .tarot-card {
+            width: 150px;
+            height: 250px;
+            background: linear-gradient(135deg, #2c2559 0%, #110d26 100%);
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--gold);
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .tarot-card.shuffling {
+            animation: shuffleAnim 0.6s ease-in-out 2;
+        }
+        .tarot-card.revealed {
+            background: #1f1a3a;
+            color: #fff;
+            border-color: #a29bfe;
+            transform: rotateY(180deg);
+        }
+        .card-content {
+            backface-visibility: hidden;
+            padding: 15px;
+            text-align: center;
+        }
+        .tarot-card.revealed .card-content {
+            transform: rotateY(180deg);
+        }
+        button {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+        button:hover {
+            background: var(--gold);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--gold);
+        }
+        .result-area {
+            margin-top: 20px;
+            text-align: left;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            display: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+        .result-title {
+            color: var(--gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .result-section {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .result-section strong {
+            color: #a29bfe;
+        }
+
+        @keyframes shuffleAnim {
+            0% { transform: scale(1) translateX(0); }
+            25% { transform: scale(0.9) translateX(-30px) rotate(-5deg); }
+            50% { transform: scale(1.1) translateX(30px) rotate(5deg); }
+            100% { transform: scale(1) translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>神聖領域 · 靈魂啟示占卜</h1>
+    <p class="intro">閉上雙眼，靜心呼吸三次。心中默想你的困惑，隨後祈請內在神性給予指引。</p>
+    
+    <div class="card-area">
+        <div class="tarot-card" id="tarotCard" onclick="drawCard()">
+            <div class="card-content" id="cardText">🔮<br>感應牌卡</div>
+        </div>
+    </div>
+
+    <button id="actionBtn" onclick="drawCard()">凝神抽牌</button>
+
+    <div class="result-area" id="resultArea">
+        <div class="result-title" id="resName"></div>
+        <div class="result-section"><strong>📜 古典偉特牌意：</strong><span id="resClassic"></span></div>
+        <div class="result-section"><strong>🧠 榮格潛意識鏡像：</strong><span id="resPsych"></span></div>
+        <div class="result-section"><strong>✨ 阿卡西靈魂指引：</strong><span id="resGuide"></span></div>
+    </div>
+</div>
+
+<script>
+    // 嚴謹參考偉特牌意與心理學原型所寫出的真實資料庫
+    const tarotDatabase = [
+        {
+            name: "0 愚者 (The Fool)",
+            icon: "✨",
+            classic: "偉特塔羅中，愚者站在懸崖邊緣，懷揣著純真與一隻白狗。這並不代表愚蠢，而是『絕對的信任』與生命黃金能量的初始。它像徵著你正處於一個全新週期的起點，前方是未知的冒險，傳統的規則在此刻已不再適用。",
+            psych: "榮格心理學中的『天真者原型（The Innocent）』。你內心深處正渴望打破現有的社會制約或集體束縛。你可能感到迷茫，但這種迷茫正是你靈魂渴望自由的警訊。你被允許去犯錯，因為沒有任何傷痕會是白費的。",
+            guide: "放手吧。你抓得太緊的那些計劃、那些安全感，反而成為了靈魂的牢籠。信任那個引導你前進的直覺，即使在外人眼裡看起來很瘋狂。勇敢跨出那一步，深淵下方，會有靈性的翅膀將你接住。"
+        },
+        {
+            name: "I 魔術師 (The Magician)",
+            icon: "⚡",
+            classic: "魔術師頭頂無限大符號（∞），桌上擺放著聖杯、寶劍、權杖與星幣四元素。這代表『顯化』的力量——你已經擁有了將靈感落實到物質世界所需的所有工具。天與地在你的意圖中連結，你就是創造者。",
+            psych: "榮格心理學中的『魔法師原型（The Magician）』。這反映出你內在正湧現強大的意志力與專注力。你不再是環境的受害者，你正在有意識地重塑你的現實。這張牌的出現，意味著你目前遇到的問題，核心解方就在你自己身上，而非向外求援。",
+            guide: "專注於你的核心意念。你嘴裡說出的話、心裡擴散的振動，正在迅速顯化成真。請停止抱怨或自我懷疑，因為那同樣會被顯化。整合你身邊現有的資源，現在就是動手創造、開創新局的最高能量時刻。"
+        },
+        {
+            name: "II 女祭司 (The High Priestess)",
+            icon: "🌙",
+            classic: "女祭司身處黑白雙柱（Jachin & Boaz）之間，胸前佩戴十字，手持神秘卷軸。她代表被隱藏的秘密、直覺、月亮能量以及非理性的智慧。這不是採取行動的牌，而是退回內在、保持靜止與觀察的牌。",
+            psych: "榮格心理學中的『阿尼瑪（Anima）/ 內部女性潛意識原型』。你當前的困境無法透過邏輯、數據分析或世俗的道理來解決。你的夢境、突如其來的直覺，甚至是身體的莫名緊繃，都是潛意識在向你傳遞重要訊息。",
+            guide: "外在的喧囂正在擾亂你的磁場。這張牌提醒你『不要做出任何承諾與行動』。保持沉默，退回自己的聖殿。答案早就寫在你的心裡，當你不再焦慮地尋找答案時，真相自然會在迷霧散去後清晰浮現。"
+        },
+        {
+            name: "IX 隱士 (The Hermit)",
+            icon: "⏳",
+            classic: "隱士獨自站在冰雪封頂的高山上，手提一盞內含六角星的提燈。他象徵內省、孤獨、尋求真理與心靈導師。這張牌代表你正在經歷一場靈魂的暗夜，你需要暫時遠離人群與世俗的評價，尋找自己的光。",
+            psych: "榮格心理學中的『智者原型（The Wise Old Man）』。你正經歷一場深度的『個體化進程（Individuation）』。現在的孤獨不是孤立，而是必要的沉澱。你開始對外在的掌聲感到疲憊，這代表你即將從物質層面蛻變至精神層面。",
+            guide: "不要害怕目前的孤獨或不被理解。這段看似停滯的時期，是為了讓你點燃內在的燈火。去閱讀、去冥想、去與自己的陰影對話。當你不再渴望得到世界的認同，你就是自己最偉大的引路人。"
+        },
+        {
+            name: "XIII 死神 (Death)",
+            icon: "💀",
+            classic: "死神身穿黑色甲冑，騎著白馬踏過國王與平民。這張牌在古典神秘學中鮮少代表肉體的死亡，而是代表『徹底的結束與重組』。舊有的結構必須完全粉碎，地平線彼端那輪象徵新生的太陽才能升起。",
+            psych: "榮格心理學中的『轉化與自我崩解（Ego Death）』。你正面臨人生某個重大執著的瓦解（可能是一段關係、一份工作或舊有的價值觀）。你的痛苦來自於你的『抗拒放手』。順應這個潮汐，不合時宜的東西必須離去，新生命才有空間進來。",
+            guide: "請優雅地對過去道別，並為其舉行一場內在的葬禮。允許該結束的結束，不要再試圖為已經腐朽的關係或局勢人工呼吸。這是一場神聖的排毒，當你願意空出雙手，宇宙會將真正屬於你靈魂高度的禮物交託給你。"
+        },
+        {
+            name: "XXI 世界 (The World)",
+            icon: "🌍",
+            classic: "世界牌是 Major Arcana 的最後一張牌。舞者身處桂冠花環中，四週圍繞着四神獸。這象徵著圓滿、旅程的終點、和諧、整合與巨大的成功。你經歷了所有的試煉，終於將內在與外在世界達成了完美的平衡。",
+            psych: "榮格心理學中最終極的狀態——『自我的實現與整合（The Self）』。你已經成功將自己的陰影、光明、理性與感性整合為一。你不再感到匱乏，你體驗到了生命是一場完整的圓，你就在這棟神聖建築的正中央。",
+            guide: "享受這個豐盛與圓滿的時刻，慶祝你所走過的一切。你已經抵達了一個階段的終點，並且完全畢業了。請帶著這份大和諧的能量，去祝福與滋養周圍的人。你是被宇宙深深愛著且圓滿的存在。"
+        }
+    ];
+
+    let isShuffling = false;
+
+    function drawCard() {
+        if (isShuffling) return;
+        
+        isShuffling = true;
+        const card = document.getElementById('tarotCard');
+        const btn = document.getElementById('actionBtn');
+        const resultArea = document.getElementById('resultArea');
+        const cardText = document.getElementById('cardText');
+
+        // 初始化狀態
+        card.classList.remove('revealed');
+        resultArea.style.opacity = '0';
+        resultArea.style.display = 'none';
+        cardText.innerHTML = "🌀<br>靈能洗牌中...";
+        card.classList.add('shuffling');
+        btn.disabled = true;
+
+        // 模擬洗牌與感應時間
+        setTimeout(() => {
+            card.classList.remove('shuffling');
+            
+            // 隨機抽取一張
+            const randomIndex = Math.floor(Math.random() * tarotDatabase.length);
+            const picked = tarotDatabase[randomIndex];
+
+            // 填入資料
+            cardText.innerHTML = `${picked.icon}<br>${picked.name}`;
+            document.getElementById('resName').innerText = `🔮 靈魂鏡像：${picked.name}`;
+            document.getElementById('resClassic').innerText = picked.classic;
+            document.getElementById('resPsych').innerText = picked.psych;
+            document.getElementById('resGuide').innerText = picked.guide;
+
+            // 翻牌與顯現結果
+            card.classList.add('revealed');
+            resultArea.style.display = 'block';
+            
+            setTimeout(() => {
+                resultArea.style.opacity = '1';
+                btn.disabled = false;
+                btn.innerText = "再次祈請指引";
+                isShuffling = false;
+            }, 100);
+
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
